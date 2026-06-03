@@ -1,0 +1,80 @@
+# =============================================================================
+# RDAE MVP Stage 1 Default Configuration
+# =============================================================================
+
+# --- Model ---
+model:
+  # Visual encoder
+  visual_encoder: "resnet50"          # resnet50 | vit_b_16
+  visual_feature_dim: 512
+
+  # World encoder (2-layer Transformer on top of visual features)
+  world_latent_dim: 256
+  transformer_layers: 2
+  transformer_heads: 8
+  transformer_dropout: 0.1
+
+  # Action decoder (Diffusion Policy)
+  action_dim: 7                       # e.g., 7-DoF end-effector pose delta
+  action_horizon: 16                  # predict 16 future actions
+  diffusion_steps: 100                # denoising steps
+
+  # Sensor decoder (3-layer MLP)
+  sensor_joint_dim: 7                 # joint angles
+  sensor_force_dim: 6                 # force/torque (3+3)
+  sensor_mlp_hidden: [512, 256, 128]
+
+# --- Training ---
+training:
+  batch_size: 64
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  warmup_steps: 1000
+  max_steps: 1_000_000
+  grad_clip_norm: 1.0
+
+  # Loss weights (multi-task)
+  loss_weights:
+    action_mse: 1.0
+    joint_mse: 0.5
+    force_mae: 0.3
+    consistency: 0.1                # simulation consistency loss
+
+  # Logging
+  log_interval: 100
+  eval_interval: 5000
+  save_interval: 10000
+
+# --- Data ---
+data:
+  # Real robot dataset
+  real_dataset: "bridge_v2"           # bridge_v2 | droid | custom
+  real_data_path: "./data/real/"
+
+  # Video dataset (Stage 2)
+  video_dataset: null                 # null in Stage 1
+  video_data_path: null
+
+  # Preprocessing
+  image_size: [224, 224]
+  normalize: true
+  frame_stack: 2                      # stack 2 consecutive frames
+
+  # DataLoader
+  num_workers: 8
+  prefetch_factor: 2
+
+# --- Simulation ---
+simulation:
+  engine: "mujoco"                    # mujoco | isaacsim
+  timestep: 0.002                     # 500 Hz simulation
+  consistency_thresholds:
+    pose_error_cm: 5.0               # max end-effector error in cm
+    force_error_n: 0.5               # max force error in Newtons
+
+# --- Hardware ---
+hardware:
+  device: "cuda"                      # cuda | cpu
+  gpu_ids: [0]                        # GPU device IDs
+  mixed_precision: "fp16"             # fp16 | bf16 | fp32
+  compile_model: false                # torch.compile (PyTorch 2.0+)

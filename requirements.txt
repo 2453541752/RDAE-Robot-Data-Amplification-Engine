@@ -1,0 +1,37 @@
+# =============================================================================
+# RDAE - Robot Data Amplification Engine
+# MVP Stage 1 Dependencies
+# =============================================================================
+
+# --- Core ML Framework ---
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.36.0          # HuggingFace models (ViT, etc.)
+
+# --- Diffusion Models ---
+diffusers>=0.25.0             # Diffusion Policy backbone
+
+# --- Data Processing ---
+numpy>=1.24.0
+opencv-python>=4.8.0          # Video frame processing
+ Pillow>=10.0.0                # Image handling
+h5py>=3.9.0                   # HDF5 dataset support
+mcap>=1.0.0                   # MCAP rosbag2 format
+rosbags>=0.9.0                # ROS bag reader
+
+# --- Simulation ---
+mujoco>=3.1.0                 # Physics simulation (free, fast)
+# isaacsim                     # NVIDIA Isaac Sim (install separately)
+
+# --- Training Utilities ---
+tensorboard>=2.14.0           # Training visualization
+wandb>=0.16.0                 # Experiment tracking (optional)
+tqdm>=4.66.0                  # Progress bars
+einops>=0.7.0                 # Tensor operations
+pyyaml>=6.0                   # Config file parsing
+
+# --- Development & Testing ---
+pytest>=7.4.0
+pre-commit>=3.5.0
+black>=23.0.0
+ruff>=0.1.0
