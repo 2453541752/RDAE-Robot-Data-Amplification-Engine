@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-06-03（更新2）— 模块文档体系建立
+
+### 🎯 工作内容
+1. 创建 `STAGE1.md`——Stage-1 总体说明（目标、目录、快速开始、架构速览）
+2. 为 6 个子模块各写一份 `README.md`，覆盖架构、用法、API、参考
+
+### 📦 交付成果
+| 文档 | 路径 | 内容 |
+|------|------|------|
+| Stage-1 总览 | `STAGE1.md` | 目标、目录、快速开始、架构图、指标 |
+| 模型说明 | `src/models/README.md` | 编码器/解码器架构、参数量、代码示例 |
+| 数据管道说明 | `src/data/README.md` | 数据集支持、格式规范、预处理流程 |
+| 仿真模块说明 | `src/simulation/README.md` | 一致性流程、引擎对比、API |
+| 工具模块说明 | `src/utils/README.md` | 配置加载、误差指标 |
+| 脚本说明 | `scripts/README.md` | train.py / evaluate.py 参数和流程 |
+| 配置说明 | `configs/README.md` | YAML 结构、自定义方法 |
+
+### 🔧 改动记录
+- 新增 7 个文档文件（STAGE1.md + 6 个模块 README.md）
+- 每个 README 包含架构图、代码示例、参数说明、参考文献
+
+### 📋 待办事项
+- [x] 推送代码到 GitHub ✅
+- [x] 各模块独立说明文档 ✅
+- [ ] 安装 Python 环境：`pip install -r requirements.txt`
+- [ ] 下载 BridgeData V2 或 DROID 数据集
+- [ ] 端到端训练测试：`python scripts/train.py --debug`
+
+### 🧭 下一步工作方向
+1. 环境安装 + 数据下载
+2. 首次训练跑通
+3. 进入 Stage 2：互联网视频管道
+
+
 ## 2026-06-03（更新）— 推送成功 & SSH 配置
 
 ### 🎯 工作内容
