@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-06-03（更新）— 推送成功 & SSH 配置
+
+### 🎯 工作内容
+1. HTTPS 连接 GitHub 超时，切换为 SSH 协议后推送成功
+2. `stage-1` 分支已上线 GitHub（21 个文件）
+
+### 🔧 改动记录
+- 远程地址从 HTTPS 切换为 SSH：`git@github.com:2453541752/RDAE-Robot-Data-Amplification-Engine.git`
+- HTTPS 在国内直连不稳定，SSH 可正常使用
+
+### 📋 待办事项
+- [x] 推送代码到 GitHub ✅
+
+---
+
 ## 2026-06-03 — 项目启动 & MVP Stage-1 骨架搭建
 
 ### 🎯 工作内容
