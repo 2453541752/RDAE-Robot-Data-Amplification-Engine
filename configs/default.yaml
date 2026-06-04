@@ -1,80 +1,109 @@
 # =============================================================================
-# RDAE MVP Stage 1 Default Configuration
+# RDAE MVP Stage 1 Configuration v2 (2026-06-03)
+# Updated for architecture v2:
+#   - Frozen ViT + Perceiver Resampler + Causal Transformer
+#   - DDIM 10-step sampling
+#   - Temporal Sensor Decoder with contact detection
 # =============================================================================
 
-# --- Model ---
+# --- Model (v2 architecture) ---
 model:
-  # Visual encoder
-  visual_encoder: "resnet50"          # resnet50 | vit_b_16
-  visual_feature_dim: 512
+  # Visual encoder (frozen)
+  vit_model: "google/vit-base-patch16-224"
+  freeze_vit: true
 
-  # World encoder (2-layer Transformer on top of visual features)
+  # Perceiver Resampler
+  perceiver:
+    num_latents: 64
+    num_layers: 2
+
+  # Causal World Transformer
+  transformer:
+    dim: 384
+    num_layers: 8
+    num_heads: 12
+    dropout: 0.1
+
+  # World latent
   world_latent_dim: 256
-  transformer_layers: 2
-  transformer_heads: 8
-  transformer_dropout: 0.1
 
-  # Action decoder (Diffusion Policy)
-  action_dim: 7                       # e.g., 7-DoF end-effector pose delta
-  action_horizon: 16                  # predict 16 future actions
-  diffusion_steps: 100                # denoising steps
+  # Action decoder (DDIM)
+  action_dim: 7
+  action_horizon: 16
+  execution_horizon: 4
+  diffusion_steps: 100          # total forward process steps
+  ddim_steps: 10                # sampling steps (10× faster)
+  ddim_eta: 0.0                 # 0 = deterministic DDIM
 
-  # Sensor decoder (3-layer MLP)
-  sensor_joint_dim: 7                 # joint angles
-  sensor_force_dim: 6                 # force/torque (3+3)
-  sensor_mlp_hidden: [512, 256, 128]
+  # Sensor decoder
+  sensor:
+    joint_dim: 7
+    temporal_layers: 2
+    temporal_heads: 8
+    temporal_hidden: 256
+    inv_feat_dim: 384
+
+  # Input
+  state_dim: 14                 # 7 joint angles + 7 velocities
+  frame_stack: 4                # number of past frames for temporal context
 
 # --- Training ---
 training:
-  batch_size: 64
+  batch_size: 32                # reduced for larger model
   learning_rate: 1.0e-4
   weight_decay: 1.0e-5
-  warmup_steps: 1000
+  warmup_steps: 2000
   max_steps: 1_000_000
   grad_clip_norm: 1.0
 
-  # Loss weights (multi-task)
+  # Multi-task loss weights
   loss_weights:
-    action_mse: 1.0
-    joint_mse: 0.5
-    force_mae: 0.3
-    consistency: 0.1                # simulation consistency loss
+    action_mse: 1.0             # diffusion noise prediction
+    joint_pos: 0.5              # joint position MSE
+    joint_vel: 0.3              # joint velocity MSE
+    force: 0.5                  # force MAE
+    contact: 0.3                # contact BCE
+    physics: 0.1                # physics consistency
+    video_mse: 0.2              # auxiliary: future frame prediction
 
   # Logging
-  log_interval: 100
+  log_interval: 50
   eval_interval: 5000
   save_interval: 10000
 
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"
+
 # --- Data ---
 data:
-  # Real robot dataset
-  real_dataset: "bridge_v2"           # bridge_v2 | droid | custom
+  real_dataset: "bridge_v2"
   real_data_path: "./data/real/"
-
-  # Video dataset (Stage 2)
-  video_dataset: null                 # null in Stage 1
+  video_dataset: null
   video_data_path: null
 
-  # Preprocessing
   image_size: [224, 224]
   normalize: true
-  frame_stack: 2                      # stack 2 consecutive frames
+  frame_stack: 4                # must match model.frame_stack
+  action_horizon: 16
 
-  # DataLoader
-  num_workers: 8
+  num_workers: 4
   prefetch_factor: 2
+  pin_memory: true
 
 # --- Simulation ---
 simulation:
-  engine: "mujoco"                    # mujoco | isaacsim
-  timestep: 0.002                     # 500 Hz simulation
+  engine: "mujoco"
+  timestep: 0.002
   consistency_thresholds:
-    pose_error_cm: 5.0               # max end-effector error in cm
-    force_error_n: 0.5               # max force error in Newtons
+    pose_error_cm: 5.0
+    force_error_n: 0.5
+    joint_error_rad: 0.1
+    contact_accuracy: 0.7       # min contact detection accuracy
 
 # --- Hardware ---
 hardware:
-  device: "cuda"                      # cuda | cpu
-  gpu_ids: [0]                        # GPU device IDs
-  mixed_precision: "fp16"             # fp16 | bf16 | fp32
-  compile_model: false                # torch.compile (PyTorch 2.0+)
+  device: "cuda"
+  gpu_ids: [0]
+  mixed_precision: "fp16"
+  compile_model: false
+  grad_accumulation: 2          # effective batch_size = 32 × 2 = 64
