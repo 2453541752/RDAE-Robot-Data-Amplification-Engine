@@ -4,6 +4,47 @@
 
 ---
 
+## 2026-06-04 — 架构 v2 实现完成（对标 SOTA）
+
+### 🎯 工作内容
+1. **世界编码器 v2 重写**：冻结 ViT-B + Perceiver Resampler (64 queries) + 8层因果 Transformer + [CLS][FRS][INV] 三专用 token
+2. **动作解码器 v2 升级**：DDIM 10步采样（替代 DDPM 100步），可变卷积核 + 扩张卷积
+3. **传感器解码器 v2 重写**：Temporal Transformer + ContactDetector（接触二分类）+ 物理一致性损失
+4. **训练脚本 v2**：支持 pretrain / finetune / validate 三阶段，混合精度训练，梯度累积
+
+### 📦 交付成果
+| 文件 | 行数 | 变更 |
+|------|:---:|------|
+| `src/models/encoder.py` | 375 → **497** | 完全重写 |
+| `src/models/sensor_decoder.py` | 180 → **374** | 完全重写 |
+| `src/models/action_decoder.py` | 210 → **328** | DDIM + 优化 |
+| `scripts/train.py` | 193 → **277** | 三阶段训练 |
+| `configs/default.yaml` | 87 → **107** | v2 配置 |
+
+### 🔧 关键改进
+| 维度 | v1 | v2 |
+|------|----|----|
+| 视觉编码 | ResNet-50 → 单向量 | ViT-B 冻结 → 197 patch tokens |
+| Token 压缩 | 无 | Perceiver Resampler (64 tokens) |
+| 融合 | 2层, 3 tokens | 8层因果 Transformer, 数百 tokens |
+| 逆动力学 | CLS token 共享 | [INV] 专用 token |
+| 辅助任务 | 无 | [FRS] 未来帧预测 |
+| 动作采样 | DDPM 100步 (~500ms) | DDIM 10步 (~50ms) |
+| 传感器 | mean_pool + MLP | Temporal Transformer + ContactDetector |
+| 物理约束 | 无 | Lagrangian 一致性损失 |
+
+### 📋 待办事项
+- [ ] 安装环境 + 下载预训练 ViT 权重
+- [ ] 下载 Ego4D 子集做视频预测预训练
+- [ ] 下载 BridgeData V2 做多任务微调
+- [ ] 端到端训练跑通并对比 v1 性能
+
+### 🧭 下一步工作方向
+1. 环境搭建 + 数据准备
+2. 视频预训练验证
+3. 端到端微调 + 仿真一致性评估
+
+
 ## 2026-06-03（更新3）— 技术调研完成 & 架构方案确定
 
 ### 🎯 工作内容
